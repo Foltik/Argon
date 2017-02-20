@@ -6,23 +6,23 @@ start:
 	times	0x0B-$+start db 0 ; Pad zeroes between jmp and 0x0B (Start of BPB)
 
 ; FAT12 BIOS Parameter Block
-BytesPerSector:  	dw 512
-SectorsPerCluster: 	db 1
-ReservedSectors: 	dw 1
-NumFATs: 			db 2
-RootEntries:     	dw 224
-TotalSectors: 		dw 2880
-MediaDescriptor     db 0xF0
-SectorsPerFAT: 	    dw 9
+BytesPerSector:		dw 512
+SectorsPerCluster:	db 1
+ReservedSectors:	dw 1
+NumFATs:			db 2
+RootEntries:		dw 224
+TotalSectors:		dw 2880
+MediaDescriptor:	db 0xF0
+SectorsPerFAT:		dw 9
 SectorsPerTrack:	dw 18
-HeadsPerCylinder: 	dw 2
-HiddenSectors: 	    dd 0
-LargeSectors:     	dd 0
+HeadsPerCylinder:	dw 2
+HiddenSectors:		dd 0
+LargeSectors:		dd 0
 DriveNumber:		db 0
 Unused:				db 0
-BootSignature: 		db 0x29
+BootSignature:		db 0x29
 VolumeID:			dd 0x13333337
-VolumeLabel:		db "SUGOIFLOPPY"
+VolumeLabel:		db "ARGONFLOPPY"
 FileSystem:			db "FAT12   "
 
 
@@ -80,7 +80,7 @@ CHStoLBA: ; Convert Cylinder-Head-Sector format to Logical Block Addressing form
 
 LBAtoCHS: ; Convert Logical Block Addressing format to Cylinder-Head-Sector Format --- ax=LBA
 		xor		dx, dx
-		div 	word [SectorsPerTrack]
+		div		word [SectorsPerTrack]
 		inc 	dl
 		mov 	byte [sectorCHS], dl ; sector = (LBA % SectorsPerTrack) + 1
 		xor		dx, dx
@@ -92,10 +92,10 @@ LBAtoCHS: ; Convert Logical Block Addressing format to Cylinder-Head-Sector Form
 
 	
 Print: ; Print string --- si=pointer to string
-		push ax
+		push	ax
 .loop:
 		lodsb
-		cmp 	al, 0x0000 ; Break if a \0 is found or si is invalid
+		cmp		al, 0x0000 ; Break if a \0 is found or si is invalid
 		je 		.done
 		mov 	ah, 0x0E ; Print char in al
 		int 	0x10
@@ -143,7 +143,7 @@ loader:
 		add		word [RootDirSector], cx
 
 		mov		bx, 0x0200 ; Read into ES:0x0200
-		call 	ReadSectors
+		call	ReadSectors
 
 		;******** LOCATE STAGE 2 ********;
 
