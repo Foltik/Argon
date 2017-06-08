@@ -1,32 +1,46 @@
 MAKE="make"
 
-all: builddirs assemble mkflp copyboot2 cleanbin
+CC = i686-elf-gcc
+
+CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra -fno-exceptions -ISystem/include
+LFLAGS = -ffreestanding -O2 -nostdlib -lgcc
+
+BUILDDIR = build
+
+KRNFILES = $(wildcard System/kernel/*.c)
+LIBFILES = $(wildcard System/lib/*.c)
+
+OBJ = $(addprefix $(BUILDDIR)/obj/, $(KRNFILES:.c=.o))
+LIBOBJ = $(addprefix $(BUILDDIR)/obj/, $(LIBFILES:.c=.o))
+
+all: builddirs assemble compile
+
+clean:
+	rm -rf build
 
 builddirs:
 	@mkdir -p build
-	@mkdir -p build/bootloader
+	@mkdir -p build/obj/System/kernel
+	@mkdir -p build/obj/System/lib
 
 assemble: 
-	@printf 'Assembling Bootloader...\n'
-	nasm -f bin -o build/bootloader/boot1.bin bootloader/boot1.asm
-	nasm -f bin -o build/bootloader/boot2.bin bootloader/boot2.asm
+	nasm -f elf32 System/kernel/bootstrap.asm -o build/obj/kernel/bootstrap.o
 
-mkflp:
-	@printf '\nCreating Floppy Disk Image...\n'
-	dd if=/dev/zero of=build/Argon.flp bs=512 count=0 seek=2880
-	dd if=build/bootloader/boot1.bin of=build/Argon.flp bs=512 seek=0 count=1 conv=notrunc
-	@printf 'Done!\n'
+compile: $(OBJ) $(LIBOBJ)
+	$(CC) -T System/kernel/link.ld -o build/Argon.bin build/obj/kernel/bootstrap.o $(OBJ) $(LIBOBJ) $(LFLAGS)
 
-copyboot2:
-	@printf 'Copying Stage 2 Bootloader to Floppy Disk Image...\n'
-	mkdir build/mnt
-	sudo mount build/Argon.flp build/mnt
-	sudo cp build/bootloader/boot2.bin build/mnt
+$(BUILDDIR)/obj/System/kernel/%.o: System/kernel/%.c
+	$(CC) -c $< -o $@ $(CFLAGS)
+	
+$(BUILDDIR)/obj/System/lib/%.o: System/lib/%.c
+	$(CC) -c $< -o $@ $(CFLAGS)
+
+mkiso:
+	mkdir build/iso/boot/grub
+	sudo mount -o loop,ro build/Argon.flp build/mnt
+	cp -Rp build/mnt/* build/iso
+	cp -p build/Argon.flp build/iso
+	mkisofs -pad -b Argon.flp -R -o build/Argon.iso build/iso
 	sudo umount build/mnt
+	rm -rf build/iso
 	rm -rf build/mnt
-	@printf 'Done!\n'
-
-cleanbin:
-	@printf 'Cleaning objects from build/...\n'
-	rm -rf build/bootloader
-	@printf 'Done!\n'
