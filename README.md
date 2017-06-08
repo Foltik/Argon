@@ -7,14 +7,16 @@ meant to be, or will it ever be, a full scale production OS.
 
 Building and Running
 --------
-`make` -- Note: Requires root access to mount and copy boot2.bin to the image
+`make` -- Build the kernel image
+
+
+To automatically boot the kernel (multiboot compatible):
 ```
 qemu-system-x86_64 \
-  -boot a \               # Boot FDA
-  -fda build/Argon.flp \  # Image to Load
-  -m 32 \                 # Change as desired
-  -s \                    # For remote GDB debugging at port 1234
-  -monitor stdio          # For viewing information about the OS while it is running
+  -kernel Build/Argon.sys \  # Kernel Image
+  -m 32 \                    # RAM Allocated -- Change as desired
+  -s \                       # Enable remote GDB debugging at port 1234
+  -monitor stdio             # Enable printing information about the OS while it is running to stdio
 ```
 
 TODO:
