@@ -24,10 +24,10 @@ builddirs:
 	@mkdir -p build/obj/System/lib
 
 assemble: 
-	nasm -f elf32 System/kernel/bootstrap.asm -o build/obj/kernel/bootstrap.o
+	nasm -f elf32 System/kernel/bootstrap.asm -o build/obj/System/kernel/bootstrap.o
 
 compile: $(OBJ) $(LIBOBJ)
-	$(CC) -T System/kernel/link.ld -o build/Argon.bin build/obj/kernel/bootstrap.o $(OBJ) $(LIBOBJ) $(LFLAGS)
+	$(CC) -T System/kernel/link.ld -o build/Argon.sys build/obj/System/kernel/bootstrap.o $(OBJ) $(LIBOBJ) $(LFLAGS)
 
 $(BUILDDIR)/obj/System/kernel/%.o: System/kernel/%.c
 	$(CC) -c $< -o $@ $(CFLAGS)
