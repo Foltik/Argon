@@ -5,15 +5,37 @@
 
 #define VRAM 0xB8000
 
+// 0 < x < 80
+// 0 < y < 25
 static unsigned _posx = 0;
 static unsigned _posy = 0;
 static unsigned _startx = 0;
 static unsigned _starty = 0;
 static unsigned _color = 0;
+static unsigned _ccolor = 0;
+
+void VGA_Scroll() {
+	for (int y = 0; y < 24; y++) {
+		for (int x = 0; x < 80; x++) {
+		    uint8_t* this = (uint8_t*)(VRAM + (x * 2) + (y * 2 * 80));
+			uint8_t* next = (uint8_t*)(VRAM + (x * 2) + ((y + 1) * 2 * 80));
+
+			*this++ = *next++;
+			*this = *next;
+		}
+	}
+	for (int x = 0; x < 80; x++) {
+		uint8_t* this = (uint8_t*)(VRAM + (x * 2) + (24 * 2 * 80)); 
+		
+		*this++ = ' ';
+		*this = _ccolor;
+	}
+}
 
 unsigned iabs(int32_t i) {
 	if (i >= 0)
 		return (unsigned)i;
+	
 	return (UINT32_MAX - (unsigned)i) + 1U;
 }
 
@@ -38,7 +60,7 @@ void _itoa_imp(unsigned i, unsigned base, char* buf) {
 }
 
 void itoa_s(int i, unsigned base, char* buf) {
-	if (base < 2 || base > 16) {
+	if (base < 2 || base > 16 || i == 0) {
 		buf[0] = '0';
 		buf[1] = '\0';
 		return;
@@ -51,22 +73,32 @@ void itoa_s(int i, unsigned base, char* buf) {
 }
 
 void VGA_Putc(unsigned char c) {
-	if (c == 0)
+	if (c == '\0')
 		return;
 
 	if (c == '\n' || c == '\r') {
-		_posy += 2;
-		_posx = _startx;
-		return;
+		if (_posy == 24) {
+			VGA_Scroll();
+			_posx = _startx;
+			return;
+		} else {
+			_posy++;
+			_posx = _startx;
+			return;
+		}
 	}
 
 	if (_posx > 79) {
-		_posy += 2;
-		_posx = _startx;
-		return;
+        if (_posy == 24) {
+            VGA_Scroll();
+            _posx = _startx;
+        } else {
+            _posy++;
+            _posx = _startx;
+        }
 	}
 
-	uint8_t* p = (uint8_t*)(VRAM + (_posx++)*2 + _posy * 80);
+    uint8_t* p = (uint8_t*)(VRAM + (_posx++ * 2) + (_posy * 2 * 80));
 	*p++ = c;
 	*p = _color;
 }
@@ -163,27 +195,30 @@ void VGA_Puts(char* str) {
 }
 
 void VGA_GotoXY(unsigned x, unsigned y) {
-	_posx = x * 2;
-	_posy = y * 2;
+	_posx = x;
+	_posy = y;
 
 	_startx = _posx;
 	_starty = _posy;
 }
 
-void VGA_Clear(const unsigned short c) {
-	uint8_t* p = (uint8_t*)VRAM;
-	
-	for (size_t i = 0; i < 160 * 30; i += 2) {
-		p[i] = ' ';
-		p[i + 1] = c;
+void VGA_Clear() {
+	for (int y = 0; y < 25; y++) {
+		for (int x = 0; x < 80; x++) {
+		    uint8_t* p = (uint8_t*)(VRAM + (x * 2) + (y * 2 * 80));
+			*p++ = ' ';
+			*p = _ccolor;
+		}
 	}
 
 	_posx = _startx;
 	_posy = _starty;
 }
 
-unsigned VGA_SetColor(const unsigned c) {
-	unsigned old = _color;
+void VGA_SetColor(const unsigned c) {
 	_color = c;
-	return old;
+}
+
+void VGA_SetClearColor(const unsigned c) {
+	_ccolor = c;
 }
