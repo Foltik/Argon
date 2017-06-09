@@ -1,30 +1,29 @@
-MBALIGN		equ 1<<0
-MEMINFO		equ	1<<1
-FLAGS		equ	MBALIGN | MEMINFO
-MAGIC		equ	0x1BADB002
-CHECKSUM	equ	-(MAGIC + FLAGS)
+.set MBALIGN,	1<<0
+.set MEMINFO,	1<<1
+.set FLAGS,		MBALIGN | MEMINFO
+.set MAGIC,		0x1BADB002
+.set CHECKSUM,	-(MAGIC + FLAGS)
 
-section .multiboot
-align	4
-dd		MAGIC
-dd		FLAGS
-dd		CHECKSUM
+.section .multiboot
+.align	4
+.long	MAGIC
+.long	FLAGS
+.long	CHECKSUM
 
-section .bss
-align	4
+.section .bss
+.align	4
 stackBase:
-resb	16384
+.skip	16384
 stackTop:
 
-section .text
-global _entry:function (_entry.end - _entry)
+.section .text
+.global _entry
+.type	_entry, @function
 _entry:
-		mov		esp, stackTop
+		mov		$stackTop, %esp
 		
-		extern	kmain
 		call	kmain
 
 		cli
 		hlt
-	.end:
-	
+.size 	_entry, . - _entry
