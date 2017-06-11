@@ -13,7 +13,7 @@ LIBFILES = $(wildcard System/lib/*.c)
 OBJ = $(addprefix $(BUILDDIR)/obj/, $(KRNFILES:.c=.o))
 LIBOBJ = $(addprefix $(BUILDDIR)/obj/, $(LIBFILES:.c=.o))
 
-all: builddirs assemble compile
+all: builddirs assemble compile mkiso
 
 clean:
 	rm -rf build
@@ -36,11 +36,8 @@ $(BUILDDIR)/obj/System/lib/%.o: System/lib/%.c
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 mkiso:
-	mkdir build/iso/boot/grub
-	sudo mount -o loop,ro build/Argon.flp build/mnt
-	cp -Rp build/mnt/* build/iso
-	cp -p build/Argon.flp build/iso
-	mkisofs -pad -b Argon.flp -R -o build/Argon.iso build/iso
-	sudo umount build/mnt
+	mkdir -p build/iso/boot/grub
+	cp -p Boot/grub.cfg build/iso/boot/grub
+	cp -p build/Argon.sys build/iso/boot
+	grub-mkrescue -o build/Argon.iso build/iso -d /usr/lib/grub/i386-pc
 	rm -rf build/iso
-	rm -rf build/mnt
