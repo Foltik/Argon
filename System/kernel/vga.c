@@ -1,18 +1,32 @@
+#include <sys/io.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
 #include "vga.h"
 
-#define VRAM 0xB8000
+#define VRAM	0xB8000
+
+#define CRT_DATA			0x03D5
+#define CRT_INDEX			0x03D4
+#define CRT_CURSOR_LOW		0x0F
+#define CRT_CURSOR_HIGH		0x0E
 
 // 0 < x < 80
 // 0 < y < 25
-static unsigned _posx = 0;
-static unsigned _posy = 0;
-static unsigned _startx = 0;
-static unsigned _starty = 0;
-static unsigned _color = 0;
-static unsigned _ccolor = 0;
+static uint8_t _posx = 0;
+static uint8_t _posy = 0;
+static uint8_t _startx = 0;
+static uint8_t _starty = 0;
+static uint8_t _color = 0;
+static uint8_t _ccolor = 0;
+
+void VGA_MoveCursor(uint8_t x, uint8_t y) {
+	uint16_t loc = x + y * 80;
+	outb(CRT_INDEX, CRT_CURSOR_HIGH);
+	outb(CRT_DATA, (loc >> 8) & 0xFF);
+	outb(CRT_INDEX, CRT_CURSOR_LOW);
+	outb(CRT_DATA, loc & 0xFF);
+}
 
 void VGA_Scroll() {
 	for (int y = 0; y < 24; y++) {
@@ -101,6 +115,7 @@ void VGA_Putc(unsigned char c) {
     uint8_t* p = (uint8_t*)(VRAM + (_posx++ * 2) + (_posy * 2 * 80));
 	*p++ = c;
 	*p = _color;
+	VGA_MoveCursor(_posx, _posy);
 }
 
 
