@@ -4,9 +4,13 @@ SECTIONS
 {
 	. = 1M;
 
-	.text BLOCK(4K) : ALIGN(4K)
+	.boot BLOCK(4K) : ALIGN(4K)
 	{
 		*(.multiboot)
+	}
+
+	.text BLOCK(4K) : ALIGN(4K)
+	{
 		*(.text)
 	}
 
@@ -22,7 +26,9 @@ SECTIONS
 
 	.bss BLOCK(4K) : ALIGN(4K)
 	{
-		*(COMMON)
+		__bss_start = .;
 		*(.bss)
+		__bss_end = .;
 	}
+	__end = .;
 }

@@ -24,10 +24,10 @@ builddirs:
 	@mkdir -p build/obj/System/lib
 
 assemble: 
-	i686-elf-as System/kernel/bootstrap.asm -o build/obj/System/kernel/bootstrap.o
+	i686-elf-as Boot/bootstrap.s -o build/obj/bootstrap.o
 
 compile: $(OBJ) $(LIBOBJ)
-	$(CC) -T System/kernel/link.ld -o build/Argon.sys build/obj/System/kernel/bootstrap.o $(OBJ) $(LIBOBJ) $(LFLAGS)
+	$(CC) -T link.ld -o build/Argon.sys build/obj/bootstrap.o $(OBJ) $(LIBOBJ) $(LFLAGS)
 
 $(BUILDDIR)/obj/System/kernel/%.o: System/kernel/%.c
 	$(CC) -c $< -o $@ $(CFLAGS)
