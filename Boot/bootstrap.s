@@ -25,16 +25,21 @@ stackTop:
 .type	_entry, @function
 _entry:
 		mov		$stackTop, %esp
+		
+		movl	%eax, %edx
 
 		mov		$__bss_start, %edi
 		mov		$__end + 3, %ecx
 		xor		%eax, %eax
 		sub		%edi, %ecx
 		shr		$2, %ecx
-		rep; stosl
-		
+		rep; 	stosl
+
+		mov		%edx, %eax
+						
 		call	kmain
 
+_halt:
 		cli
 		hlt
 .size 	_entry, . - _entry
