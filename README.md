@@ -28,9 +28,9 @@ going from next to be implemented to long term goals.
 Short Term:
 
 - [x] Stage 1 Bootloader to load and execute Stage 2
-- [ ] Stage 2 Bootloader to load and execute the Kernel
+- [x] Stage 2 Bootloader to load and execute the Kernel
 - [ ] Kernel Framework
-- [ ] Syscalls to print different datatypes
+- [x] Syscalls to print different datatypes
 - [ ] Ring0 shell on boot
 - [ ] Filesystem Driver
 - [ ] Basic Hardware I/O
